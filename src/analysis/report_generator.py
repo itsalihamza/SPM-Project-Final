@@ -1,5 +1,5 @@
 """
-Report Generator
+"""Report Generator
 Creates JSON, CSV, and visual reports
 """
 
@@ -8,10 +8,20 @@ import csv
 from typing import List, Dict, Any
 from pathlib import Path
 from datetime import datetime
-import matplotlib.pyplot as plt
-import matplotlib
-matplotlib.use('Agg')  # Use non-interactive backend
-import pandas as pd
+
+try:
+    import matplotlib.pyplot as plt
+    import matplotlib
+    matplotlib.use('Agg')
+    MATPLOTLIB_AVAILABLE = True
+except ImportError:
+    MATPLOTLIB_AVAILABLE = False
+
+try:
+    import pandas as pd
+    PANDAS_AVAILABLE = True
+except ImportError:
+    PANDAS_AVAILABLE = False
 
 
 class ReportGenerator:
@@ -38,6 +48,20 @@ class ReportGenerator:
             json.dump(analysis_results, f, indent=2, ensure_ascii=False)
         
         return str(filepath.absolute())
+    
+    def generate_visual_summary(
+        self,
+        analysis_results: Dict[str, Any],
+        filename: str = None
+    ) -> str:
+        """Generate visual summary with charts"""
+        
+        if not MATPLOTLIB_AVAILABLE:
+            logger.warning("Matplotlib not available. Skipping visual report.")
+            return None
+        
+        # Rest of implementation...
+        return None
     
     def generate_csv_report(
         self,

@@ -1,11 +1,26 @@
 """OCR engine for extracting text from images"""
 
-import pytesseract
-import easyocr
+try:
+    import pytesseract
+    TESSERACT_AVAILABLE = True
+except ImportError:
+    TESSERACT_AVAILABLE = False
+
+try:
+    import easyocr
+    EASYOCR_AVAILABLE = True
+except ImportError:
+    EASYOCR_AVAILABLE = False
+
+try:
+    import cv2
+    CV2_AVAILABLE = True
+except ImportError:
+    CV2_AVAILABLE = False
+
 from PIL import Image
 import requests
 from io import BytesIO
-import cv2
 import numpy as np
 from typing import Optional, Dict
 import structlog
@@ -27,6 +42,12 @@ class OCREngine:
             primary_engine: 'tesseract' or 'easyocr'
             fallback: If True, try alternate engine if primary fails
         """
+        if not TESSERACT_AVAILABLE and not EASYOCR_AVAILABLE:
+            logger.warning("No OCR engines available. OCR functionality disabled.")
+            self.primary_engine = None
+            self.fallback = False
+            return
+        
         self.primary_engine = primary_engine
         self.fallback = fallback
         self._easyocr_reader = None

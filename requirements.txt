@@ -27,6 +27,7 @@ emoji==2.8.0
 Pillow==10.1.0
 opencv-python-headless==4.8.1.78
 pytesseract==0.3.10
+easyocr==1.7.0
 
 # Visualization & Reports
 matplotlib==3.7.1

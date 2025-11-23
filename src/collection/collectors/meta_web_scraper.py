@@ -4,14 +4,20 @@ import time
 import json
 from typing import List, Dict
 from datetime import datetime
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.common.exceptions import TimeoutException, NoSuchElementException
+
+try:
+    from selenium import webdriver
+    from selenium.webdriver.common.by import By
+    from selenium.webdriver.support.ui import WebDriverWait
+    from selenium.webdriver.support import expected_conditions as EC
+    from selenium.webdriver.chrome.options import Options
+    from selenium.webdriver.chrome.service import Service
+    from webdriver_manager.chrome import ChromeDriverManager
+    from selenium.common.exceptions import TimeoutException, NoSuchElementException
+    SELENIUM_AVAILABLE = True
+except ImportError:
+    SELENIUM_AVAILABLE = False
+
 from src.collection.collectors.base_collector import BaseCollector, CollectionConfig
 
 
@@ -26,6 +32,9 @@ class MetaWebScraper(BaseCollector):
     
     def __init__(self, config: CollectionConfig):
         super().__init__(config)
+        if not SELENIUM_AVAILABLE:
+            self.logger.error("Selenium not available. MetaWebScraper cannot be used.")
+            raise ImportError("Selenium is required for MetaWebScraper but is not installed")
         self.driver = None
         self.logger.info("Using MetaWebScraper - scraping public Meta Ad Library website")
     

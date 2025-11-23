@@ -1,7 +1,12 @@
 """Model manager and cache for ML models"""
 
-from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoModel
-import torch
+try:
+    from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoModel
+    import torch
+    TRANSFORMERS_AVAILABLE = True
+except ImportError:
+    TRANSFORMERS_AVAILABLE = False
+
 from typing import Dict, Optional, Tuple
 import structlog
 from pathlib import Path
@@ -19,6 +24,12 @@ class ModelCache:
         self.cache_dir = Path(cache_dir)
         self.cache_dir.mkdir(exist_ok=True, parents=True)
         self._loaded_models = {}
+        
+        if not TRANSFORMERS_AVAILABLE:
+            logger.warning("Transformers not available. ML classification disabled.")
+            self._device = None
+            return
+        
         self._device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         logger.info(f"Using device: {self._device}")
     
