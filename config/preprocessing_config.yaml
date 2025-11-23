@@ -1,0 +1,38 @@
+# Preprocessing configuration
+
+ocr:
+  primary_engine: "tesseract"  # tesseract or easyocr
+  fallback_enabled: true
+  tesseract_config: "--oem 3 --psm 6"
+  languages:
+    - "eng"
+  
+  image_preprocessing:
+    apply_denoising: true
+    apply_adaptive_threshold: true
+    resize_max_dimension: 2000
+
+text_cleaning:
+  max_headline_length: 500
+  max_body_length: 5000
+  preserve_emojis: true
+  remove_urls: false
+  remove_html_tags: true
+  fix_encoding: true
+
+validation:
+  required_fields:
+    - "ad_id"
+    - "platform"
+    - "collected_at"
+  
+  quality_thresholds:
+    min_text_length: 10
+    min_ocr_confidence: 0.6
+    require_either_text_or_media: true
+
+normalization:
+  standardize_brand_names: true
+  normalize_call_to_action: true
+  extract_emoji_metadata: true
+  detect_urgency_phrases: true

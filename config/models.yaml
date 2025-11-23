@@ -1,0 +1,43 @@
+# ML Models configuration
+
+# All models are FREE from Hugging Face
+# No authentication required
+
+text_classification:
+  ad_format:
+    type: "rule_based"
+    
+  campaign_objective:
+    model: "facebook/bart-large-mnli"
+    task: "zero-shot-classification"
+    candidate_labels:
+      - "brand awareness"
+      - "traffic"
+      - "engagement"
+      - "app installs"
+      - "video views"
+      - "lead generation"
+      - "conversions"
+      - "product catalog sales"
+    
+  product_category:
+    model: "sentence-transformers/all-MiniLM-L6-v2"
+    task: "embedding"
+    
+  sentiment:
+    model: "cardiffnlp/twitter-roberta-base-sentiment-latest"
+    task: "sentiment-analysis"
+
+logo_detection:
+  framework: "yolov8"
+  model_size: "medium"
+  confidence_threshold: 0.5
+  iou_threshold: 0.4
+
+model_cache:
+  cache_dir: "./model_cache"
+  device: "cpu"  # Change to "cuda" if GPU available
+  
+batch_processing:
+  max_workers: 4
+  batch_size: 32

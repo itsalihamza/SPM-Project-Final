@@ -1,0 +1,42 @@
+# Configuration for target competitor platforms
+
+meta:
+  name: "Meta Ad Library"
+  # Official Graph API endpoint (v18.0)
+  base_url: "https://graph.facebook.com/v18.0/ads_archive"
+  api_version: "v18.0"
+  rate_limit_per_hour: 200
+  rate_limit_per_second: 0.5
+  requires_auth: true
+  # Get your access token from: https://developers.facebook.com/
+  # Set via environment variable: META_ACCESS_TOKEN
+  access_token_env: "META_ACCESS_TOKEN"
+  supported_countries:
+    - US
+    - GB
+    - CA
+    - AU
+  default_params:
+    ad_reached_countries: "['US']"
+    ad_active_status: "ALL"
+    limit: 30
+    fields: "id,ad_creative_bodies,ad_creative_link_captions,ad_creative_link_descriptions,ad_creative_link_titles,ad_delivery_start_time,ad_delivery_stop_time,ad_snapshot_url,currency,funding_entity,page_name,impressions,spend"
+
+google:
+  name: "Google Ads Transparency Center"
+  base_url: "https://adstransparency.google.com"
+  rate_limit_per_hour: 100
+  rate_limit_per_second: 0.3
+  requires_auth: false
+  notes: "Scraping-based collection, respect robots.txt"
+
+competitor_websites:
+  - name: "Competitor A"
+    url: "https://www.competitora.com"
+    scrape_delay_seconds: 3
+    respect_robots_txt: true
+  
+  - name: "Competitor B"
+    url: "https://www.competitorb.com"
+    scrape_delay_seconds: 3
+    respect_robots_txt: true

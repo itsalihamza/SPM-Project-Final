@@ -1,0 +1,27 @@
+# Keywords to track for competitor monitoring
+
+brands:
+  - "CompetitorBrand1"
+  - "CompetitorBrand2"
+  - "CompetitorBrand3"
+
+product_categories:
+  - "software"
+  - "saas"
+  - "cloud computing"
+  - "data analytics"
+  - "cybersecurity"
+
+campaign_themes:
+  - "black friday"
+  - "cyber monday"
+  - "holiday sale"
+  - "new year"
+  - "back to school"
+
+monitoring_keywords:
+  - "limited time offer"
+  - "discount"
+  - "free trial"
+  - "get started"
+  - "sign up now"
