@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.11.9-slim
 
 # Install Chrome and system dependencies for Selenium + OCR
 RUN apt-get update && apt-get install -y \
