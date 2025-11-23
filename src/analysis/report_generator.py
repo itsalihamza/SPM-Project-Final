@@ -49,20 +49,6 @@ class ReportGenerator:
         
         return str(filepath.absolute())
     
-    def generate_visual_summary(
-        self,
-        analysis_results: Dict[str, Any],
-        filename: str = None
-    ) -> str:
-        """Generate visual summary with charts"""
-        
-        if not MATPLOTLIB_AVAILABLE:
-            logger.warning("Matplotlib not available. Skipping visual report.")
-            return None
-        
-        # Rest of implementation...
-        return None
-    
     def generate_csv_report(
         self,
         ads: List[Dict[str, Any]],
@@ -118,6 +104,10 @@ class ReportGenerator:
         filename: str = None
     ) -> str:
         """Generate visual summary with charts"""
+        
+        if not MATPLOTLIB_AVAILABLE:
+            logger.warning("Matplotlib not available. Skipping visual report.")
+            return None
         
         if filename is None:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
