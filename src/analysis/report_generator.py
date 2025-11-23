@@ -1,5 +1,5 @@
 """
-"""Report Generator
+Report Generator
 Creates JSON, CSV, and visual reports
 """
 
@@ -8,6 +8,9 @@ import csv
 from typing import List, Dict, Any
 from pathlib import Path
 from datetime import datetime
+import structlog
+
+logger = structlog.get_logger()
 
 try:
     import matplotlib.pyplot as plt
