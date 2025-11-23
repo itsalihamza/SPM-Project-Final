@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: ad-intelligence-agent
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /health
