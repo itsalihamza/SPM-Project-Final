@@ -31,8 +31,8 @@ RUN pip install --no-cache-dir --upgrade pip wheel && \
 # Copy application code
 COPY . /app
 
-# Expose port
+# Expose port (Railway will set this dynamically)
 EXPOSE 8000
 
-# Run application
-CMD ["uvicorn", "api_server:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run application - use shell form to allow environment variable expansion
+CMD uvicorn api_server:app --host 0.0.0.0 --port ${PORT:-8000}
