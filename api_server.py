@@ -5,12 +5,13 @@ Provides REST API endpoints for the ad intelligence pipeline
 
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional, Dict, Any
-from datetime import datetime
+from datetime import datetime, timezone
 import uvicorn
 import structlog
 import json
+import os
 from pathlib import Path
 
 from src.collection.collectors.meta_ad_library import MetaAdLibraryCollector
@@ -53,18 +54,19 @@ AGENT_INFO = {
 
 class AdCollectionRequest(BaseModel):
     """Request model for ad collection"""
-    keywords: List[str] = Field(..., description="Keywords to search for", min_items=1)
+    keywords: List[str] = Field(..., description="Keywords to search for", min_length=1)
     platform: str = Field(default="metaweb", description="Platform to collect from (meta, metaweb, mock)")
     max_results: int = Field(default=10, description="Maximum number of ads to collect", ge=1, le=100)
     
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "keywords": ["Nike", "Adidas"],
                 "platform": "metaweb",
                 "max_results": 20
             }
         }
+    )
 
 
 class AdData(BaseModel):
@@ -91,8 +93,8 @@ class AdCollectionResponse(BaseModel):
     execution_time_seconds: float
     timestamp: str
     
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "success": True,
                 "message": "Successfully collected and processed 10 ads",
@@ -104,6 +106,7 @@ class AdCollectionResponse(BaseModel):
                 "timestamp": "2024-11-23T14:30:00Z"
             }
         }
+    )
 
 
 class HealthCheckResponse(BaseModel):
@@ -125,7 +128,7 @@ class RegistrationRequest(BaseModel):
 # GLOBAL STATE
 # ============================================================================
 
-start_time = datetime.utcnow()
+start_time = datetime.now(timezone.utc)
 supervisor_url: Optional[str] = None
 
 
@@ -152,13 +155,13 @@ async def root():
 @app.get("/health", response_model=HealthCheckResponse)
 async def health_check():
     """Health check endpoint"""
-    uptime = (datetime.utcnow() - start_time).total_seconds()
+    uptime = (datetime.now(timezone.utc) - start_time).total_seconds()
     
     return HealthCheckResponse(
         status="healthy",
         agent_id=AGENT_INFO["agent_id"],
         version=AGENT_INFO["version"],
-        timestamp=datetime.utcnow().isoformat(),
+        timestamp=datetime.now(timezone.utc).isoformat(),
         uptime_seconds=uptime,
         capabilities=AGENT_INFO["capabilities"]
     )
@@ -176,7 +179,7 @@ async def collect_ads(request: AdCollectionRequest):
     4. Analyzes performance and generates insights
     5. Returns structured results with reports
     """
-    start = datetime.utcnow()
+    start = datetime.now(timezone.utc)
     
     try:
         logger.info("Received ad collection request", 
@@ -232,7 +235,7 @@ async def collect_ads(request: AdCollectionRequest):
         logger.info(f"Generated reports: {list(report_paths.keys())}")
         
         # Calculate execution time
-        execution_time = (datetime.utcnow() - start).total_seconds()
+        execution_time = (datetime.now(timezone.utc) - start).total_seconds()
         
         # Build response with analysis results
         response = AdCollectionResponse(
@@ -243,7 +246,7 @@ async def collect_ads(request: AdCollectionRequest):
             total_classified=len(classified_ads),
             ads=analysis_results['analyzed_ads'],
             execution_time_seconds=execution_time,
-            timestamp=datetime.utcnow().isoformat()
+            timestamp=datetime.now(timezone.utc).isoformat()
         )
         
         # Add analysis results to response
@@ -286,7 +289,7 @@ async def register_with_supervisor(request: RegistrationRequest):
             "capabilities": AGENT_INFO["capabilities"],
             "health_check_url": "http://localhost:8000/health",
             "api_url": "http://localhost:8000/api/v1/collect",
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
         
         response = requests.post(
@@ -322,33 +325,36 @@ async def register_with_supervisor(request: RegistrationRequest):
 @app.get("/api/v1/status")
 async def get_status():
     """Get detailed agent status"""
-    uptime = (datetime.utcnow() - start_time).total_seconds()
+    uptime = (datetime.now(timezone.utc) - start_time).total_seconds()
     
     return {
         "agent_info": AGENT_INFO,
         "uptime_seconds": uptime,
         "supervisor_url": supervisor_url,
         "registered": supervisor_url is not None,
-        "timestamp": datetime.utcnow().isoformat()
+        "timestamp": datetime.now(timezone.utc).isoformat()
     }
 
 
 # ============================================================================
-# STARTUP/SHUTDOWN EVENTS
+# STARTUP/SHUTDOWN EVENTS (Using lifespan for modern FastAPI)
 # ============================================================================
 
-@app.on_event("startup")
-async def startup_event():
-    """Run on application startup"""
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan event handler"""
+    # Startup
     logger.info("Ad Intelligence Agent API starting up", 
                version=AGENT_INFO["version"],
                agent_id=AGENT_INFO["agent_id"])
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Run on application shutdown"""
+    yield
+    # Shutdown
     logger.info("Ad Intelligence Agent API shutting down")
+
+# Update app initialization to use lifespan
+app.router.lifespan_context = lifespan
 
 
 # ============================================================================
@@ -356,10 +362,11 @@ async def shutdown_event():
 # ============================================================================
 
 if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
     uvicorn.run(
         "api_server:app",
         host="0.0.0.0",
-        port=8000,
-        reload=True,
+        port=port,
+        reload=False,  # Disable reload in production
         log_level="info"
     )
